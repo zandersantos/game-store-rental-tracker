@@ -1,13 +1,55 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum ItemCategory {
+  GAME
+  HARDWARE
+}
+
+enum ItemStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+}
+
+model User {
+  id        String      @id @default(uuid())
+  email     String      @unique
+  name      String
+  // Optionally add role/permissions fields in the future
+
+  statusLogs StatusLog[]  @relation("UserStatusLogs")
+}
+
+model Item {
+  id         String      @id @default(uuid())
+  name       String
+  category   ItemCategory
+  status     ItemStatus
+  imageUrl   String?
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+
+  statusLogs StatusLog[] @relation("ItemStatusLogs")
+}
+
+model StatusLog {
+  id             String      @id @default(uuid())
+  item           Item        @relation("ItemStatusLogs", fields: [itemId], references: [id])
+  itemId         String
+
+  previousStatus ItemStatus
+  newStatus      ItemStatus
+
+  changedBy      User        @relation("UserStatusLogs", fields: [changedById], references: [id])
+  changedById    String
+
+  note           String?
+  createdAt      DateTime    @default(now())
 }
