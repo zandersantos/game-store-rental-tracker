@@ -87,3 +87,10 @@ export async function updateItemStatus(
 
   return result;
 }
+
+export async function getDefaultStaffUser() {
+  return prisma.user.findFirst({
+    where: { email: "staff@gamestore.com" },
+    select: { id: true, name: true },
+  });
+}
